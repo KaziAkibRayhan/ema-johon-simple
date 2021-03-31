@@ -4,19 +4,19 @@ import {
   processOrder,
   removeFromDatabaseCart,
 } from "../../utilities/databaseManager";
-import fakeData from "../../fakeData";
+// import fakeData from "../../fakeData";
 import ReviewItem from "../ReviewItem/ReviewItem";
 import Cart from "../Cart/Cart";
 import happyImage from "../../images/giphy.gif";
+import { useHistory } from "react-router";
 
 const Review = () => {
   const [cart, setCart] = useState([]);
   const [orderPlaced,setOrderPlaced] = useState(false);
+  const history = useHistory()
 
-  const handlePlaceOrder = () =>{
-    setCart([]);
-    setOrderPlaced(true);
-    processOrder();
+  const handleProceedCheckout = () =>{
+    history.push('/shipment')
   }
 
   const removeProduct = (productKey) => {
@@ -31,18 +31,28 @@ const Review = () => {
     const saveCart = getDatabaseCart();
     const productKeys = Object.keys(saveCart);
 
-    const cartProducts = productKeys.map((key) => {
-      const product = fakeData.find((pd) => pd.key === key);
-      product.quantity = saveCart[key];
-      return product;
-    });
-    setCart(cartProducts);
+    fetch('http://localhost:5000/productsByKeys', {
+      method: "POST",
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(productKeys)
+    })
+    .then(res => res.json())
+    .then(data => setCart(data))
+
+    // const cartProducts = productKeys.map((key) => {
+    //   const product = fakeData.find((pd) => pd.key === key);
+    //   product.quantity = saveCart[key];
+    //   return product;
+    // });
+    // setCart(cartProducts);
   }, []);
 
-  let thankYou; 
-  if(orderPlaced){
-    thankYou =  <img src={happyImage} alt=""/>
-  } 
+  // let thankYou; 
+  // if(orderPlaced){
+  //   thankYou =  <img src={happyImage} alt=""/>
+  // } 
   return (
     <div className="shop-container">
       <div className="product-container">
@@ -53,13 +63,13 @@ const Review = () => {
             product={pd}
           ></ReviewItem>
         ))}
-        {
+        {/* {
           thankYou 
-        }
+        } */}
       </div>
       <div className="cart-container">
         <Cart cart={cart}>
-          <button onClick={handlePlaceOrder} className="main-button">Place Order</button>
+          <button onClick={handleProceedCheckout} className="main-button">Proceed Checkout</button>
         </Cart>
       </div>
     </div>
